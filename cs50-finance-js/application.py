@@ -1,5 +1,5 @@
 from cs50 import SQL
-from flask import Flask, flash, redirect, render_template, request, session, url_for
+from flask import Flask, flash, redirect, render_template, request, session, url_for, jsonify
 from flask_session import Session
 from passlib.apps import custom_app_context as pwd_context
 from tempfile import mkdtemp
@@ -31,6 +31,59 @@ Session(app)
 # configure CS50 Library to use SQLite database
 db = SQL("sqlite:///finance.db")
 
+
+
+# ==================== QUOTE - AJAX ====================
+
+@app.route("/quoteajax")
+def quoteajax():
+    symbol = request.args.get("symbol")
+    name = request.args.get("name")
+    url = f"https://www.alphavantage.co/query?apikey=NAJXWIA8D6VN6A3K&datatype=csv&function=TIME_SERIES_INTRADAY&interval=1min&symbol={symbol}"
+    webpage = urllib.request.urlopen(url)
+    datareader = csv.reader(webpage.read().decode("utf-8").splitlines())
+    next(datareader)
+    row = next(datareader)
+    
+    # ensure stock exists
+    try:
+        price = float(row[4])
+    except:
+        return jsonify({
+            "name": 0,
+            "price": 0,
+            "symbol": 0
+        })
+
+     # load also company name if called from /quote view
+    if name:
+        
+        ''' ticker to company name convetor - beginning
+        http://docs.python-guide.org/en/latest/scenarios/scrape/
+        ''' 
+        
+        try:
+            from lxml import html
+            import requests
+            
+            page = requests.get(f"https://www.marketwatch.com/investing/stock/{symbol}")
+            tree = html.fromstring(page.content)
+            company = tree.xpath('//h1[@class="company__name"]/text()')[0] # looks up <h1 class="company__name">{symbol}</h1> at 'page'
+        except:
+            company = symbol.upper() # if error, proceed as initially designed by cs50 staff
+            
+        ''' end ticker convertor '''
+    else: # company name stored in DB, no need to load again
+        company = symbol.upper()
+    
+    
+    
+    
+    return jsonify({
+        "name": company,
+        "price": float(row[4]),
+        "symbol": symbol.upper()
+    })
 
 # ==================== REGISTER ====================
 
@@ -354,7 +407,7 @@ def sell():
         else:
 
             # lookup stock price
-            quote = lookup(symbol, symbol)
+            quote = lookup(symbol, name)
             
             if not quote:
                 return apology("invalid symbol")
