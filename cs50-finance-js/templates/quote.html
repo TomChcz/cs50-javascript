@@ -7,6 +7,13 @@
             $(document).ready(function() {
 
                 $("#quote").submit(function() {
+                    
+                    if ($("#symbol").val() == "") {
+                        alert("please input symbol");
+                        return false;
+                    }
+                    
+                    else {
 
                     $.getJSON("/quoteajax", {symbol: $("#symbol").val(), name: $("#symbol").val()}, function(data) {
                         
@@ -18,6 +25,8 @@
                         }
                     });
                     return false;
+                    
+                    }
                     
                 });
 
