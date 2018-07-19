@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+
+{% block script %}
+        <script>
+
+
+            $(document).ready(function() {
+
+                $("#quote").submit(function() {
+
+                    $.getJSON("/quoteajax", {symbol: $("#symbol").val(), name: $("#symbol").val()}, function(data) {
+                        
+                        if (data.price == 0) {
+                            alert("wrong symbol");
+                        }
+                        else {
+                            alert(data.name + " (" + data.symbol + ") costs " + data.price);
+                        }
+                    });
+                    return false;
+                    
+                });
+
+            });
+        </script>
+        
+{% endblock %}
+
+
+
+{% block title %}
+    Quote
+{% endblock %}
+
+{% block main %}
+
+    {% if rm == "GET" %}
+        <form action="{{ url_for('quote') }}" method="post">
+            <fieldset>
+                <div class="form-group">
+                    <input autocomplete="off" autofocus class="form-control" name="symbol" placeholder="Symbol" type="text"/>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-default" type="submit">Get Quote</button>
+                </div>
+            </fieldset>
+        </form>
+        
+        <br><br>
+        ajax quote
+        <br><br>
+        <form id="quote">
+            <input autocomplete="off" autofocus id="symbol" placeholder="Symbol ajax" type="text"/>
+            <input type="submit" value="Get Quote"/>
+        </form>
+        <p id="quote"></p>
+        
+        
+        
+        
+        
+    {% elif rm == "POST" %}
+    <br><br>
+    A share of {{ quote.name }} ({{ quote.symbol }}) costs {{ quote.price|usd }}.
+        
+    {% endif %}
+
+
+
+
+    
+
+{% endblock %}

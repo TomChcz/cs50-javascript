@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Portfolio
+{% endblock %}
+
+{% block main %}
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Symbol</th>
+                <th>Name</th>
+                <th>Shares</th>
+                <th>Price</th>
+                <th>TOTAL</th>
+                {% if rows2 %}<th>Buy more?</th>{% endif %}
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                <td colspan="4"></td>
+                <td>{{ (ownedStockValue + userCash)|usd  }}</td>
+                {% if rows2 %}<td></td>{% endif %}
+            </tr>
+        </tfoot>
+        <tbody>
+            <form action="{{ url_for('buy_multiple') }}" method="post">
+            {% for row in rows2 %}
+                <tr>
+                    <td>{{ row.symbol }}</td>
+                    <td>{{ row.name }}</td>
+                    <td>{{ row.sharesOwned }}</td>
+                    <td>{{ row.price|usd }}</td>
+                    <td>{{ row.sum|usd }}</td>
+                    {% if rows2 %}
+                        <td>
+                            <div class="form-group">
+                                <input type="hidden" name="names" value="{{ row.name }}"/>
+                                <input type="hidden" name="symbol" value="{{ row.symbol }}"/>
+                                <input autocomplete="off" class="form-control" min="0" name="shares" placeholder="Enter amount" type="number"/>
+                            </div>
+                        </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+
+            <tr>
+                <td colspan="4">CASH</td>
+                <td>{{ userCash|usd }}</td>
+                {% if rows2 %}<td><button class="btn btn-primary" type="submit">Buy</button></td>{% endif %}
+            </tr>
+            </form>
+        </tbody>
+    </table>
+
+{% endblock %}
